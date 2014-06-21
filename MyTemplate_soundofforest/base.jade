@@ -1,0 +1,70 @@
+html
+	head
+		meta(content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0", name="viewport")
+		meta(content="yes", name="apple-mobile-web-app-capable")
+		meta(content="black", name="apple-mobile-web-app-status-bar-style")
+		meta(content="telephone=no", name="format-detection")
+		meta(name="renderer", content="webkit")
+		title
+			block title
+				| {{ request.args.s or site.title }}
+		load('fonts pure /template/css/blog.scss')
+		//- load('/template/js/category.js')
+	body
+		#layout.pure-g-r
+			.sidebar.pure-u
+				#avatar
+					a(href="/")
+						img.logo(src="{{ site.avatar }}?width=180&height=180&fixed=true", alt="site.title")
+				h1
+					img.myh1(src="/_image/title.gif?width=240&height=80&fixed=true",alt="site.title")
+				
+				#redirectlink 
+                	ul.vst
+                    	li
+                            a(href='/') 主页
+                   		li
+							a(href='/album') 照片库
+						if not has('posts')
+							redirect('/album')
+						li
+							a(href='/category') 类别
+						li
+							a(href='/archive') 存档
+						li
+							a(href='/tags') 标签
+						if site.configs.duoshuo
+							li
+								a(href='/recent') 评论/访客
+	     				li
+							a(href='/about.md') 作者简介
+
+				.search_bar
+					input#search_value(type="text", value=request.args.s, onkeyup="if (event.keyCode == 13) search();")
+					a(href="javascript:search()")
+						i.fa.fa-search
+			.pure-u-1
+				#topallbum
+					if has('images')
+						p.backimages
+					if not has('images')
+						ul.topimages
+				#main
+					block content
+				#footer
+					if site.configs.disqus
+						a(href="http://mick3dell.farbox.com#disqus_thread") Link
+					.CopyRight_By
+						span Powered by 
+						a(target='_blank', href="http://www.farbox.com") FarBox
+						span . Owned by 
+						<mailto> dysdy@yahoo.com
+						span . ©2014, All Right Reserved.
+
+			script(type="text/javascript")
+				function search(){
+					if (document.getElementById('search_value').value){
+							location.href='http://'+location.host+'?s='+document.getElementById('search_value').value;
+						}
+						return false;
+					}

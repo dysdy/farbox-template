@@ -1,0 +1,15 @@
+
+	if request.path.startswith('/album/~root')
+		sub_images = get_data(types='image', min_images_count=1, level=1, limit=60, pager_name='this_album', sort='asc')
+	else
+		sub_images = get_data(types='folder+image', path=folder.path, min_images_count=1, level=1, limit=60, pager_name='this_album', sort='asc')							
+							
+	for im in sub_images
+		if im.content_type == 'folder'
+			li
+				a(href='/album/{{im.path}}')
+					img.backfill(src="{{ im.url }}?width=80&height=40&fixed=true", alt=im.title)
+		else
+			li
+			 	a.fb-image(href="#")
+					img.backfill(src="{{ im.url }}?width=80&height=40&fixed=true", alt=im.title)

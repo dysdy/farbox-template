@@ -1,0 +1,93 @@
+extends base
+
+{% from 'include/cache_macros' import cache_render_next %}
+{% from 'include/cache_macros' import cache_render_pre %}
+
+{% from 'include/cache_macros' import cache_render_next_with_category %}
+{% from 'include/cache_macros' import cache_render_pre_with_category %}
+
+{% set root_article_folder = '/allarticle' %}
+{% set category_article_folder = '/allarticle' %}
+{% set category_article_name = '所有文章' %}
+{% set category_url_addin = '' %}
+
+block title
+	post.title
+block content
+	.detail_post
+		.post
+			//- if post.path
+			if get_doc(post.path)==None
+				raise_404()
+			//- else
+				//- raise_404()
+			{% set mypost_path=request.path %}
+			{% set testurl=request.url %}
+			if testurl.find('?')!= -1
+				{% set firstposition=testurl.index('?') %} 
+				{% set testgroup=testurl[firstposition+1:] %}
+				{% set testgroup=testgroup.replace('%2F','/') %}
+				if testgroup.startswith("name=")
+					if testgroup.find('&') != -1
+						{% set splitposition=testgroup.index('&') %}
+						{% set firstname=testgroup[:splitposition] %}
+						{% set secondname=testgroup[splitposition+1:] %}
+						{% set nameposition=firstname.index('=') %}
+						{% set category_name=firstname[nameposition+1:] %}
+						if secondname.startswith('path=')
+							{% set folderposition=secondname.index('=') %}
+							{% set category_folder=secondname[folderposition+1:] %}
+							if category_name=='' or category_folder==''
+								raise_404()
+							{% set category_article_folder = category_folder %}
+							{% set category_article_name = category_name %}
+							{% set category_url_addin = testgroup %}
+						else
+							raise_404()
+					else
+						raise_404()
+				else
+					raise_404()
+			else
+				raise_404()
+		
+			//- a(href=mypost_path)= post.title	
+			h2.title
+				a(href=request.url)= post.title
+			.post_body= post.content
+			.info
+				span.date(title="Public Date")
+					i.fa.fa-clock-o
+					|&nbsp;
+					{{post.date.format('%Y-%m-%d %H:%M')}}
+				span.visitors(title="Views")
+					i.fa.fa-user
+					|&nbsp;
+					{{ post.visits or 0 }}
+				if site.configs.duoshuo
+					<span class="ds-thread-count" data-count-type="comments" data-thread-key="{{post.url}}" title="Comments"></span>
+				if post.tags
+					span.tags
+						i.fa.fa-tags
+						for tag in post.tags
+							a(href="/tag/{{tag}}")= tag
+							
+				.other_posts
+					if pre_one
+						//- +cache_render_pre_with_category(post,root_article_folder,true,category_url_addin)
+						+cache_render_pre_with_category(post,category_article_folder,true,category_url_addin)	
+					if next_one
+						//- +cache_render_next_with_category(post,root_article_folder,true,category_url_addin)
+						+cache_render_next_with_category(post,category_article_folder,true,category_url_addin)
+						
+		include include/commentcontain.jade
+	if request.path.startswith('/postca')
+		#category_show
+			#showcatename
+				p.backset
+					my_cover_photo = get_data(path=category_article_folder,type='image', min_images_count=1, level=1, limit=1, with_page=False)
+					if my_cover_photo
+						img(src="{{my_cover_photo.url}}?fixed=true")
+					p.showfont=category_article_name
+			#backtocate
+				a(href="/category") 返回分类

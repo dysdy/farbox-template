@@ -1,0 +1,36 @@
+extends base
+{% set root_article_folder = '/allarticle' %}
+{% set root_article_folder_name = '所有文章' %}
+
+block title
+	if request.path.strip('/') == 'category'
+		| Categories
+	elif request.path.startswith('/category')
+		| {{ category.title }}
+	elif request.path.startswith('/tag')
+		| {{ tags.join('+') }}
+	else
+		| {{ request.args.s or site.title }}
+block content
+	if request.path.strip('/') == 'category'
+		ul.categories#categories
+			for category in  get_data(type='folder', level=[1,2], min_posts_count=1)
+				{% set mypath= category.path %}
+				if mypath.startswith(root_article_folder.strip('/'))
+					li
+						if category.title==root_article_folder.strip('/')
+							{% set display_name=root_article_folder_name %}
+						else
+							{% set display_name=category.title %}
+						a(href="/category/{{ category.path }}")
+							my_cover_phto = get_data(path=category.path,type='image', min_images_count=1, level=1, limit=1, with_page=False)
+							if my_cover_phto
+								img.showcover(src="{{my_cover_phto.url}}?fixed=true")
+							h3=display_name
+							span {{ category.posts_count }} posts
+
+	else
+		if request.path.startswith('/category') and (not request.path.startswith('/category'+root_article_folder))
+			raise_404()
+		else
+			include include/posts_list
